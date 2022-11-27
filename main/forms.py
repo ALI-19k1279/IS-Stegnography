@@ -14,4 +14,9 @@ class RegisterForm(UserCreationForm):
 class StegForm(forms.ModelForm):
     class Meta:
         model = Stegno
+        fields = ["hidden_message","filename", "key"]
+        
+class StegDecodeForm(forms.ModelForm):
+    class Meta:
+        model = Stegno
         fields = ["filename", "key"]

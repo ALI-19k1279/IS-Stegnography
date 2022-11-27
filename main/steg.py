@@ -6,8 +6,8 @@ from matplotlib import pyplot as plt
 import rsa
 publicKey, privateKey = rsa.newkeys(512)
 pw=[]
-def txt_encode(text,filepath):
-    key=input("Enter Key to Encode:")
+def txt_encode(text,filepath,key,nameoffile):
+    #key=input("Enter Key to Encode:")
     encp=rsa.encrypt(key.encode(),publicKey)
     pw.append(encp)
     l=len(text)
@@ -33,9 +33,9 @@ def txt_encode(text,filepath):
     print("Length of binary after conversion:- ",length)
     HM_SK=""
     ZWC={"00":u'\u200C',"01":u'\u202C',"11":u'\u202D',"10":u'\u200E'}  
-    file1 = open(filepath,"r+")
-    nameoffile = input("\nEnter the name of the Stego file after Encoding(with extension):- ")
-    file3= open(nameoffile,"w+", encoding="utf-8")
+    file1 = filepath              #open(filepath,"r+")
+    #nameoffile = input("\nEnter the name of the Stego file after Encoding(with extension):- ")
+    file3= open(nameoffile+'.txt',"w+", encoding="utf-8")
     word=[]
     for line in file1: 
         word+=line.split()
@@ -49,35 +49,39 @@ def txt_encode(text,filepath):
             x=res1[j+i]+res1[i+j+1]
             HM_SK+=ZWC[x]
             j+=2
-        s1=s+HM_SK
+        print(type(s.decode('utf-8')))
+        print(type(HM_SK))
+        s1=s.decode('utf-8')+HM_SK
         file3.write(s1)
         file3.write(" ")
         i+=12
     t=int(len(res1)/12)     
     while t<len(word): 
-        file3.write(word[t])
+        file3.write(word[t].decode('utf-8'))
         file3.write(" ")
         t+=1
     file3.close()  
     file1.close()
     print("\nStego file has successfully generated")
     
-def encode_txt_data():
+def encode_txt_data(filepath,text1,key,nameoffile):
     count2=0
-    filepath=input("\nEnter filepath to Encode Text Data:- ")
-    file1 = open(filepath,"r")
+    #filepath=input("\nEnter filepath to Encode Text Data:- ")
+    file1 = filepath      #open(filepath,"r")
     for line in file1: 
+        print(line)
         for word in line.split():
             count2=count2+1
-    file1.close()       
+        
     bt=int(count2)
     
     print("Maximum number of words that can be inserted :- ",int(bt/6))
-    text1=input("\nEnter data to be encoded:- ")
+    #text1=input("\nEnter data to be encoded:- ")
     l=len(text1)
     if(l<=bt):
         print("\nInputed message can be hidden in the cover file\n")
-        txt_encode(text1,filepath)
+        txt_encode(text1,filepath,key,nameoffile)
+        file1.close()   
     else:
         print("\nString is too big please reduce string size")
         encode_txt_data()
@@ -87,13 +91,13 @@ def BinaryToDecimal(binary):
     return string
 
 
-def decode_txt_data():
+def decode_txt_data(stego,user_input,):
     real_pw=rsa.decrypt(pw[0], privateKey).decode()
-    user_input=input("\nEnter Key To Decode:")
+    #user_input=input("\nEnter Key To Decode:")
     if (user_input==real_pw):
         ZWC_reverse={u'\u200C':"00",u'\u202C':"01",u'\u202D':"11",u'\u200E':"10"}
-        stego=input("\nPlease enter the stego file name(with extension) to decode the message:- ")
-        file4= open(stego,"r", encoding="utf-8")
+        #stego=input("\nPlease enter the stego file name(with extension) to decode the message:- ")
+        file4= open(stego+'.txt',"r", encoding="utf-8")
         temp=''
         for line in file4: 
             for words in line.split():
@@ -130,6 +134,7 @@ def decode_txt_data():
                 decimal_data = BinaryToDecimal(t4)
                 final+=chr((decimal_data ^ 170) - 48)
         print("\nMessage after decoding from the stego file:- ",final)
+        return final
         
     else:
         print("\nWrong Key!")
@@ -535,32 +540,32 @@ def vid_steg():
             print("Incorrect Choice")
         print("\n")
         
-def main():
-    print("\t\t      STEGANOGRAPHY")   
-    while True:  
-        print("\n\t\t\tMAIN MENU\n")  
-        print("1. IMAGE STEGANOGRAPHY {Hiding Text in Image cover file}")  
-        print("2. TEXT STEGANOGRAPHY {Hiding Text in Text cover file}")  
-        print("3. AUDIO STEGANOGRAPHY {Hiding Text in Audio cover file}")
-        print("4. VIDEO STEGANOGRAPHY {Hiding Text in Video cover file}")
-        print("5. Exit\n")  
-        choice1 = int(input("Enter the Choice: "))   
-        if choice1 == 1: 
-            img_steg()
-        elif choice1 == 2:
-            txt_steg()
-        elif choice1 == 3:
-            aud_steg()
-        elif choice1 == 4:
-            vid_steg()
-        elif choice1 == 5:
-            break
-        else:
-            print("Incorrect Choice")
-        print("\n\n")
+# def main():
+#     print("\t\t      STEGANOGRAPHY")   
+#     while True:  
+#         print("\n\t\t\tMAIN MENU\n")  
+#         print("1. IMAGE STEGANOGRAPHY {Hiding Text in Image cover file}")  
+#         print("2. TEXT STEGANOGRAPHY {Hiding Text in Text cover file}")  
+#         print("3. AUDIO STEGANOGRAPHY {Hiding Text in Audio cover file}")
+#         print("4. VIDEO STEGANOGRAPHY {Hiding Text in Video cover file}")
+#         print("5. Exit\n")  
+#         choice1 = int(input("Enter the Choice: "))   
+#         if choice1 == 1: 
+#             img_steg()
+#         elif choice1 == 2:
+#             txt_steg()
+#         elif choice1 == 3:
+#             aud_steg()
+#         elif choice1 == 4:
+#             vid_steg()
+#         elif choice1 == 5:
+#             break
+#         else:
+#             print("Incorrect Choice")
+#         print("\n\n")
         
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
     
 
 

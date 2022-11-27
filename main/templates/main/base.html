@@ -11,6 +11,8 @@
       integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
       crossorigin="anonymous"
     />
+    <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.no-icons.min.css" rel="stylesheet">
+    <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
     <link href="/static/style.css" type="text/css" rel="stylesheet" />
     <title>{% block title %}My Site{% endblock %}</title>
     <style>
@@ -32,6 +34,11 @@
         border-radius: 20px;
         border: 3px;
       }
+      html, body {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+    
     button:hover{
         cursor: pointer;
     }
@@ -66,14 +73,76 @@
       margin-block-start: 10px;
       width: min-content;
     }
+    body{
+      background-color: 	#F5F5F5;
+      
+  }
   
+  .registration-form .item{
+    border-radius: 20px;
+      margin-bottom: 25px;
+      padding: 10px 20px;
+  }
+  
+  .registration-form .create-account{
+      border-radius: 30px;
+      padding: 10px 20px;
+      font-size: 18px;
+      font-weight: bold;
+      background-color: #5791ff;
+      border: none;
+      color: white;
+      margin-top: 20px;
+  }
+    form{
+      background-color: #fff;
+      max-width: 600px;
+      margin: auto;
+      padding: 50px 70px;
+      border-top-left-radius: 30px;
+      border-top-right-radius: 30px;
+      box-shadow: 10px 5px 5px #888888;;
+      
+  }
+  .item{
+    border-radius: 20px;
+      margin-bottom: 25px;
+      padding: 10px 20px;
+  }
+  .create-account{
+    border-radius: 30px;
+    padding: 10px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    background-color: #5791ff;
+    border: none;
+    color: white;
+    margin-top: 20px;
+}
+.form-icon{
+  width: 70px;
+  height: 70px;
+  font-size: 30px;
+  line-height: 70px;
+}
+.custom-file-upload {
+  border: 1px solid #ccc;
+  display: inline-block;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+  @media (max-width: 576px) {
+    form{
+        padding: 50px 20px;
+    }
     </style>
   </head>
   <body>
     <nav
-      class="navbar navbar-expand-lg navbar-dark bg-dark justify-content-center"
+      class="navbar navbar-expand-lg navbar-dark bg-dark "
     >
-      <div class="container-fluid">
+      <div class="container-fluid" >
         <a class="navbar-brand" href="/home">StegnoTool</a>
         <div>
           <ul class="navbar-nav">
@@ -91,6 +160,9 @@
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/video-steg">Video</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/decode">Decode</a>
             </li>
           </ul>
         </div>

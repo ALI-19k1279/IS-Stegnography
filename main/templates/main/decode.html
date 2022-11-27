@@ -1,0 +1,22 @@
+{% extends 'main/base.html' %} {% block title %}Create a Post{% endblock %}
+{%load crispy_forms_tags %} {% block content %}
+<div class="wrap">
+  <form method="post" enctype="multipart/form-data">
+    <legend><strong>Decode / hide</strong></legend>
+    {% csrf_token %}{{form|crispy}}
+    <button type="submit" class="btn btn-success">Hide</button>
+    <label for="message">
+        Decoded message:
+      <input name="message" id="message" value="" disabled>
+      </label>
+  </form>
+  <br />
+  <hr />
+</div>
+{% endblock %}
+
+
+{% comment %} <label class="custom-file-upload">
+    <input  type="file"   name="file_to_encode" id="file_to_encode" />
+    <i class="fa-solid fa-file-import"></i> Upload
+</label> {% endcomment %}
