@@ -3,11 +3,15 @@
 <div class="wrap">
   <form method="post" enctype="multipart/form-data">
     <legend><strong>Encode / hide</strong></legend>
-    <label class="custom-file-upload">
+    <label class="custom-file-upload" for="file_to_encode">
       Upload:
       <input type="file" name="file_to_encode" id="file_to_encode" />
       <i class="fa-solid fa-file-import"></i>
     </label>
+    <label for="message">
+      Message:
+    </label>
+      <textarea class="form-control" name="message" id="message" rows="5" ></textarea>
     {% csrf_token %}{{form|crispy}}
     <button type="submit" class="btn btn-success">Hide</button>
   </form>

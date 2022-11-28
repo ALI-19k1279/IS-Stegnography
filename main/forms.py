@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Stegno
+from .models import Steg
 
 class RegisterForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -13,10 +13,10 @@ class RegisterForm(UserCreationForm):
 
 class StegForm(forms.ModelForm):
     class Meta:
-        model = Stegno
-        fields = ["hidden_message","filename", "key"]
+        model = Steg
+        fields = ["filename", "user_key"]
         
 class StegDecodeForm(forms.ModelForm):
     class Meta:
-        model = Stegno
-        fields = ["filename", "key"]
+        model = Steg
+        fields = ["filename", "user_key"]

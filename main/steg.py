@@ -4,12 +4,17 @@ import os
 import cv2
 from matplotlib import pyplot as plt
 import rsa
-publicKey, privateKey = rsa.newkeys(512)
+from base64 import b64encode, b64decode
+import hashlib
+from Cryptodome.Cipher import AES
+from Cryptodome.Random import get_random_bytes
+
+# publicKey, privateKey = rsa.newkeys(512)
 pw=[]
-def txt_encode(text,filepath,key,nameoffile):
+def txt_encode(text,filepath,nameoffile):
     #key=input("Enter Key to Encode:")
-    encp=rsa.encrypt(key.encode(),publicKey)
-    pw.append(encp)
+    # encp=rsa.encrypt(key.encode(),publicKey)
+    # pw.append(encp)
     l=len(text)
     i=0
     add=''
@@ -64,7 +69,7 @@ def txt_encode(text,filepath,key,nameoffile):
     file1.close()
     print("\nStego file has successfully generated")
     
-def encode_txt_data(filepath,text1,key,nameoffile):
+def encode_txt_data(filepath,text1,nameoffile):
     count2=0
     #filepath=input("\nEnter filepath to Encode Text Data:- ")
     file1 = filepath      #open(filepath,"r")
@@ -80,7 +85,7 @@ def encode_txt_data(filepath,text1,key,nameoffile):
     l=len(text1)
     if(l<=bt):
         print("\nInputed message can be hidden in the cover file\n")
-        txt_encode(text1,filepath,key,nameoffile)
+        txt_encode(text1,filepath,nameoffile)
         file1.close()   
     else:
         print("\nString is too big please reduce string size")
@@ -91,53 +96,67 @@ def BinaryToDecimal(binary):
     return string
 
 
-def decode_txt_data(stego,user_input,):
-    real_pw=rsa.decrypt(pw[0], privateKey).decode()
-    #user_input=input("\nEnter Key To Decode:")
-    if (user_input==real_pw):
-        ZWC_reverse={u'\u200C':"00",u'\u202C':"01",u'\u202D':"11",u'\u200E':"10"}
-        #stego=input("\nPlease enter the stego file name(with extension) to decode the message:- ")
-        file4= open(stego+'.txt',"r", encoding="utf-8")
-        temp=''
-        for line in file4: 
-            for words in line.split():
-                T1=words
-                binary_extract=""
-                for letter in T1:
-                    if(letter in ZWC_reverse):
-                        binary_extract+=ZWC_reverse[letter]
-                if binary_extract=="111111111111":
-                    break
-                else:
-                    temp+=binary_extract
-        print("\nEncrypted message presented in code bits:",temp) 
-        lengthd = len(temp)
-        print("\nLength of encoded bits:- ",lengthd)
-        i=0
-        a=0
-        b=4
-        c=4
-        d=12
-        final=''
-        while i<len(temp):
-            t3=temp[a:b]
-            a+=12
-            b+=12
-            i+=12
-            t4=temp[c:d]
-            c+=12
-            d+=12
-            if(t3=='0110'):
-                decimal_data = BinaryToDecimal(t4)
-                final+=chr((decimal_data ^ 170) + 48)
-            elif(t3=='0011'):
-                decimal_data = BinaryToDecimal(t4)
-                final+=chr((decimal_data ^ 170) - 48)
-        print("\nMessage after decoding from the stego file:- ",final)
-        return final
+
+def decrypt(enc_dict, password):
+    # decode the dictionary entries from base64
+    salt = b64decode(enc_dict['salt'])
+    cipher_text = b64decode(enc_dict['cipher_text'])
+    nonce = b64decode(enc_dict['nonce'])
+    tag = b64decode(enc_dict['tag'])
+    
+
+    # generate the private key from the password and salt
+    private_key = hashlib.scrypt(
+        password.encode(), salt=salt, n=2**14, r=8, p=1, dklen=32)
+
+    # create the cipher config
+    cipher = AES.new(private_key, AES.MODE_GCM, nonce=nonce)
+
+    # decrypt the cipher text
+    decrypted = cipher.decrypt_and_verify(cipher_text, tag)
+
+    return decrypted
+def decode_txt_data(stego):
+    ZWC_reverse={u'\u200C':"00",u'\u202C':"01",u'\u202D':"11",u'\u200E':"10"}
+    file4= open(stego+'.txt',"r", encoding="utf-8")
+    temp=''
+    for line in file4: 
+        for words in line.split():
+            T1=words
+            binary_extract=""
+            for letter in T1:
+                if(letter in ZWC_reverse):
+                    binary_extract+=ZWC_reverse[letter]
+            if binary_extract=="111111111111":
+                break
+            else:
+                temp+=binary_extract
+    print("\nEncrypted message presented in code bits:",temp) 
+    lengthd = len(temp)
+    print("\nLength of encoded bits:- ",lengthd)
+    i=0
+    a=0
+    b=4
+    c=4
+    d=12
+    final=''
+    while i<len(temp):
+        t3=temp[a:b]
+        a+=12
+        b+=12
+        i+=12
+        t4=temp[c:d]
+        c+=12
+        d+=12
+        if(t3=='0110'):
+            decimal_data = BinaryToDecimal(t4)
+            final+=chr((decimal_data ^ 170) + 48)
+        elif(t3=='0011'):
+            decimal_data = BinaryToDecimal(t4)
+            final+=chr((decimal_data ^ 170) - 48)
+    print("\nMessage after decoding from the stego file:- ",final)
+    return final
         
-    else:
-        print("\nWrong Key!")
     
 def txt_steg():
     while True:
@@ -171,7 +190,7 @@ def msgtobinary(msg):
     
     return result
 
-def encode_img_data(img):
+def encode_img_data(img,publicKey):
     key=input("Enter Key to Encode:")
     encp=rsa.encrypt(key.encode(),publicKey)
     pw.append(encp)
@@ -216,7 +235,7 @@ def encode_img_data(img):
     cv2.imwrite(nameoffile,img)
     print("\nEncoded the data successfully in the Image and the image is successfully saved with name ",nameoffile)
     
-def decode_img_data(img):
+def decode_img_data(img,privateKey):
     real_pw=rsa.decrypt(pw[0], privateKey).decode()
     user_input=input("\nEnter Key To Decode:")
     if(user_input==real_pw):
@@ -258,7 +277,7 @@ def img_steg():
             print("Incorrect Choice")
         print("\n")
         
-def encode_aud_data():
+def encode_aud_data(publicKey):
     import wave
     key=input("\nEnter Key To Encode:")
     encp=rsa.encrypt(key.encode(),publicKey)
@@ -305,7 +324,7 @@ def encode_aud_data():
     print("\nEncoded the data successfully in the audio file.")    
     song.close()
     
-def decode_aud_data():
+def decode_aud_data(privateKey):
     import wave
     real_pw=rsa.decrypt(pw[0], privateKey).decode()
     user_input=input("\nEnter Key To Decode:")
