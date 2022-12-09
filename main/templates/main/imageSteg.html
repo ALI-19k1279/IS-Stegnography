@@ -1,61 +1,123 @@
 {% extends 'main/base.html' %} {% block title %}Create a Post{% endblock %} 
-{% load crispy_forms_tags %} {% block content %}
-{% comment %} <form method="post">
+{%load crispy_forms_tags %} {% block content %} {% comment %}
+<form method="post">
   {% csrf_token %}{{form|crispy}}
   <button type="submit" class="btn btn-success">Post</button>
-</form> {% endcomment %}
+</form>
+{% endcomment %}
 <div class="wrap">
-  <form id='1'>
+  <div class="form-check form-check-inline">
+    <input
+      class="form-check-input"
+      type="radio"
+      name="inlineRadioOptions"
+      id="inlineRadio1"
+      value="option1"
+    />
+    <label class="form-check-label" for="inlineRadio1">1</label>
+  </div>
+  <div class="form-check form-check-inline">
+    <input
+      class="form-check-input"
+      type="radio"
+      name="inlineRadioOptions"
+      id="inlineRadio2"
+      value="option2"
+    />
+    <label class="form-check-label" for="inlineRadio2">2</label>
+  </div>
+  <div class="form-check form-check-inline">
+    <input
+      class="form-check-input"
+      type="radio"
+      name="inlineRadioOptions"
+      id="inlineRadio3"
+      value="option3"
+      disabled
+    />
+    <label class="form-check-label" for="inlineRadio3">3 (disabled)</label>
+  </div>
+
+  <form id="1">
     <div class="form-group">
-  <fieldset>
-    <legend><strong>Encode / Hide</strong></legend>
-    
-    <label for="hide_message">
-      message:
-      <input class="form-control" type="text" name="hide_message" id="hide_message" required>
-    </label>
+      <fieldset>
+        <legend><strong>Encode / Hide</strong></legend>
 
-    <label for="image">
-      image:
-      <input class="form-control" type="file" name="image" id="image" required>
-    </label>
-    <label for="key">
-      Set Key:
-      <input class="form-control" type="text" name="key" id="key" required>
-    </label>
-    <button type="submit" class="bi" onclick="hide();">Hide</button>
+        <label for="hide_message">
+          message:
+          <input
+            class="form-control"
+            type="text"
+            name="hide_message"
+            id="hide_message"
+            required
+          />
+        </label>
 
-    <span class="reqsize"></span>
-  
-  </fieldset>
-</div>
-</form>
+        <label for="image">
+          image:
+          <input
+            class="form-control"
+            type="file"
+            name="image"
+            id="image"
+            required
+          />
+        </label>
+        <label for="key">
+          Set Key:
+          <input
+            class="form-control"
+            type="text"
+            name="key"
+            id="key"
+            required
+          />
+        </label>
+        <button type="submit" class="bi" onclick="hide();">Hide</button>
+
+        <span class="reqsize"></span>
+      </fieldset>
+    </div>
+  </form>
   <br />
-  <form id='2'>
+  <form id="2">
     <div class="form-group">
-  <fieldset>
-    <legend><strong>Decode / Unhide</strong></legend>
-    <label for="key">
-      Key:
-      <input class="form-control" type="text" name="key" id="key" required>
-    </label>
-    <label for="image">
-      Decode File:
-      <input class="form-control" type="file" name="image" id="imaged">
-    </label>
-    <button type="submit" class="bi" onclick="unnhide();">Unhide</button>
-    <label for="dec_message">
-      message decoded:
-      <input class="form-control"  type="text" name="dec_message" id="dec_message" readonly>
-    </label>
-  </fieldset>
-</div>
-</form>
+      <fieldset>
+        <legend><strong>Decode / Unhide</strong></legend>
+        <label for="key">
+          Key:
+          <input
+            class="form-control"
+            type="text"
+            name="key"
+            id="key"
+            required
+          />
+        </label>
+        <label for="image">
+          Decode File:
+          <input class="form-control" type="file" name="image" id="imaged" />
+        </label>
+        <button type="submit" class="bi" onclick="unnhide();">Unhide</button>
+        <label for="dec_message">
+          message decoded:
+          <input
+            class="form-control"
+            type="text"
+            name="dec_message"
+            id="dec_message"
+            readonly
+          />
+        </label>
+      </fieldset>
+    </div>
+  </form>
 </div>
 
 <script type="text/javascript">
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register("static/serviceworker.js", { scope: "/" })
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("static/serviceworker.js", { scope: "/" });
   }
 
   let hideFiles = document.querySelector("#hidefile");
@@ -63,14 +125,15 @@
   let imageFiled = document.querySelector("#imaged");
   let reqS = document.querySelector(".reqsize");
 
-  hideFiles.addEventListener("change", (e)=>{
-    reqS.innerText = `\nrequired image of dimension ${find(e.target.files[0].size)} or above`;
+  hideFiles.addEventListener("change", (e) => {
+    reqS.innerText = `\nrequired image of dimension ${find(
+      e.target.files[0].size
+    )} or above`;
   });
-
 
   function download(file, filename) {
     const fileUrl = URL.createObjectURL(file);
-    let a = document.createElement('a');
+    let a = document.createElement("a");
     a.setAttribute("download", filename);
     a.setAttribute("href", fileUrl);
     a.click();
@@ -81,26 +144,26 @@
       method: "post",
       headers: {
         //'Content-Type': 'application/json'
-        'enctype': "multipart/form-data"
+        enctype: "multipart/form-data",
       },
-      body: bodyData
+      body: bodyData,
     });
 
     // if response is an error, exit the process
-    if(res.status == 404) {
-      reqS.innerText = "\nhmmm.. there was some error, make sure image size is correct or change the filenames or contact me on github ;P";
+    if (res.status == 404) {
+      reqS.innerText =
+        "\nhmmm.. there was some error, make sure image size is correct or change the filenames or contact me on github ;P";
       return 0;
     }
     return res;
   }
 
-  
   let hide = async () => {
     let formData = new FormData();
-    formData.append('hide', hideFiles.files[0]);
-    formData.append('img', imageFile.files[0]);
+    formData.append("hide", hideFiles.files[0]);
+    formData.append("img", imageFile.files[0]);
 
-    hideFiles.value = '', imageFile.value = '';
+    (hideFiles.value = ""), (imageFile.value = "");
 
     let res = await fileSendRequest("/hide", formData);
     if (!res) return 1;
@@ -109,12 +172,12 @@
     res = await fetch("/hide");
 
     download(json, "hidden.png");
-  }
+  };
 
-  let unnhide = async ()=> {
+  let unnhide = async () => {
     let formData = new FormData();
-    formData.append('img', imageFiled.files[0]);
-    imageFiled.value = '';
+    formData.append("img", imageFiled.files[0]);
+    imageFiled.value = "";
 
     let res = await fileSendRequest("/unhide", formData);
     if (!res) return 1;
@@ -123,7 +186,7 @@
     res = await fetch("/unhide");
     let ext = await res.text();
 
-    download(json, "decoded"+ext);
-  }
+    download(json, "decoded" + ext);
+  };
 </script>
 {% endblock %}

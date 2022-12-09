@@ -9,5 +9,7 @@ urlpatterns = [
      path('decode', views.decode, name='decode'),
     path('image-steg', views.steg, name='imageSteg'),
     path('audio-steg', views.steg, name='audioSteg'),
+    #path('post/<str:type>', views.encode, name='textSteg'),
+    path('delete/<str:filename>/<int:_id>', views.deleteRec, name='delete'),
     # path('create-post', views.create_post, name='create_post'),
 ]

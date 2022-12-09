@@ -6,6 +6,8 @@ from django.contrib.auth import login,logout,authenticate
 from django.shortcuts import render
 from .steg import *
 import rsa
+from urllib3 import encode_multipart_formdata
+from rest_framework.decorators import parser_classes
 from .models import Steg
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -17,28 +19,14 @@ from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA512, SHA384, SHA256, SHA, MD5
 from Crypto import Random
 from base64 import b64encode, b64decode
-# Create your views here.
 from base64 import b64encode, b64decode
 import hashlib
 from Cryptodome.Cipher import AES
 import os
 from Cryptodome.Random import get_random_bytes
-# import scrypt, os, binascii
-
-# def encrypt_AES_GCM(msg, password):
-#     kdfSalt = os.urandom(16)
-#     secretKey = scrypt.hash(password, kdfSalt, N=16384, r=8, p=1, buflen=32)
-#     aesCipher = AES.new(secretKey, AES.MODE_GCM)
-#     ciphertext, authTag = aesCipher.encrypt_and_digest(msg)
-#     return (kdfSalt, ciphertext, aesCipher.nonce, authTag)
-
-# def decrypt_AES_GCM(encryptedMsg, password):
-#     (kdfSalt, ciphertext, nonce, authTag) = encryptedMsg
-#     secretKey = scrypt.hash(password, kdfSalt, N=16384, r=8, p=1, buflen=32)
-#     aesCipher = AES.new(secretKey, AES.MODE_GCM, nonce)
-#     plaintext = aesCipher.decrypt_and_verify(ciphertext, authTag)
-#   return plaintext
-
+import uuid
+CRITICAL = 50
+SUCCESS	=25
 def encrypt(plain_text, password):
     # generate a random salt
     salt = get_random_bytes(AES.block_size)
@@ -65,24 +53,37 @@ def decrypt(enc_dict, password):
     cipher_text = b64decode(enc_dict['cipher_text'])
     nonce = b64decode(enc_dict['nonce'])
     tag = b64decode(enc_dict['tag'])
-    
-
     # generate the private key from the password and salt
     private_key = hashlib.scrypt(
         password.encode(), salt=salt, n=2**14, r=8, p=1, dklen=32)
 
     # create the cipher config
     cipher = AES.new(private_key, AES.MODE_GCM, nonce=nonce)
-
-    # decrypt the cipher text
+    
     decrypted = cipher.decrypt_and_verify(cipher_text, tag)
-
+    print(decrypted)
     return decrypted
 
 
 @login_required(login_url="/login")
 def home(request):
-    return render(request,'main/home.html')
+    print(request.user)
+    data=Steg.objects.filter(user=request.user)
+    return render(request,'main/home.html',{"data":data})
+
+@login_required(login_url="/login")
+def deleteRec(request,filename,_id):
+    if(request.method=="POST"):
+        if filename and _id:
+            record=Steg.objects.filter(filename=filename).first()
+            if record and record.user==request.user:
+                os.remove(os.path.join(django_settings.STATIC_ROOT, record.filename))
+                record.delete()
+                messages.add_message(request,SUCCESS,"Deleted successfully");
+            else:
+                messages.add_message(request,CRITICAL,"Deletion failed");
+    data=Steg.objects.filter(user=request.user)
+    return render(request,'main/home.html',{"data":data})
 
 @login_required(login_url="/login")
 def steg(request):
@@ -100,6 +101,7 @@ def sign_up(request):
         form=RegisterForm()
         
     return render(request,'registration/sign_up.html',{"form":form})
+
 def encrypt_private_key(a_message, private_key):
     encryptor = PKCS1_OAEP.new(private_key)
     encrypted_msg = encryptor.encrypt(a_message)
@@ -108,37 +110,48 @@ def encrypt_private_key(a_message, private_key):
     print(encoded_encrypted_msg)
     return encoded_encrypted_msg
 
+@login_required(login_url="/login")
 def encode(request):
     if request.method=='POST':
         form=StegForm(request.POST)
+        file={}
         if form.is_valid():
             steg=form.save(commit=False)
             steg.user=request.user
             print("hellllooo")
-            file=request.FILES['file_to_encode']
+            filedata=request.FILES['file_to_encode']
             user_key=form.cleaned_data["user_key"]
             user_message=request.POST["message"]
-            steg.filename=form.cleaned_data["filename"]
-            print(user_key)
-            print(user_message)
-            #print(filename)
-            print(request.COOKIES['csrftoken'])
-            #print(request.POST["h"])
-            enc_dict=encrypt(request.COOKIES['csrftoken'],user_key)
-            print(type(enc_dict))
-            # publicKey, privateKey = rsa.newkeys(512)
-            # real_pw=rsa.encrypt(key.encode(),publicKey)
-            # signature = rsa.sign(key.encode(), privateKey, 'SHA-1')
-            # steg.hidden_message=signature
-            # print(type(publicKey))
-            # steg.key=publicKey
-            # steg.shareLink=real_pw
+            print(request.POST['stegType'])
+            uniq_filename='%s%s' % (form.cleaned_data["filename"],uuid.uuid4())
+            enc_dict=encrypt(uniq_filename,user_key)
             steg.user_key=hashlib.sha256(user_key.encode()).digest()
             steg.generated_key=enc_dict.get('cipher_text')
             steg.salt=enc_dict.get('salt')
             steg.nonce=enc_dict.get('nonce')
             steg.tag=enc_dict.get('tag')
-            encode_txt_data(file,request.POST["message"],form.cleaned_data["filename"])
+            if request.POST['stegType']=="image":
+                print(filedata.content_type.split('/')[1])
+                uniq_filename=uniq_filename+'.'+filedata.content_type.split('/')[1]
+                steg.filename=uniq_filename
+                print(uniq_filename)
+                encode_img_data(filedata,request.POST["message"],uniq_filename)
+            elif request.POST['stegType']=="text":
+                print(user_message)
+                uniq_filename=uniq_filename+'.'+filedata.content_type.split('/')[1]
+                steg.filename=uniq_filename
+                encode_txt_data(filedata,request.POST["message"],uniq_filename)
+            elif request.POST['stegType']=="audio":
+                print(user_message)
+                uniq_filename=uniq_filename+'.'+filedata.content_type.split('/')[1]
+                steg.filename=uniq_filename
+                encode_aud_data(filedata,request.POST["message"],uniq_filename)
+            elif request.POST['stegType']=="video":
+                frame=request.POST['frame']
+                print(user_message)
+                uniq_filename=uniq_filename+'.'+filedata.content_type.split('/')[1]
+                steg.filename=uniq_filename
+                encode_vid_data(filedata,request.POST["message"],uniq_filename,user_key,frame)
             steg.save()
             return redirect('/home')
             
@@ -148,6 +161,7 @@ def encode(request):
         
     return render(request,'main/textSteg.html',{"form":form})
 
+@login_required(login_url="/login")
 def decode(request):
     message=""
     if request.method=='POST':
@@ -165,41 +179,87 @@ def decode(request):
             enc_dict['nonce']=obj.nonce
             enc_dict['tag']=obj.tag
             print(obj.user_key)
-            print(request.COOKIES['csrftoken'])
-            print(decrypt(enc_dict,keyInput))
-            #if(hashlib.sha256(keyInput.encode())==decrypt(enc_dict,keyInput)):
-            if(decrypt(enc_dict,keyInput).decode()==request.COOKIES['csrftoken']):
-                message=decode_txt_data(form.cleaned_data["filename"])
-                print(message)
-                messages.success(request, message)
+            try:
+                result=decrypt(enc_dict,keyInput)
+            except ValueError:
+                result="failed"
+            if result!="failed":
+                if result.decode()==form.cleaned_data["filename"].split('.')[0]:
+                        if request.POST['stegType']=="image":
+                            print(form.cleaned_data["filename"])
+                            message=decode_img_data(form.cleaned_data["filename"])
+                        elif request.POST['stegType']=="text":
+                            message=decode_txt_data(form.cleaned_data["filename"])
+                        elif request.POST['stegType']=="audio":
+                            message=decode_aud_data(form.cleaned_data["filename"])
+                        elif request.POST['stegType']=="video":
+                            frame=request.POST['frame']
+                            message=decode_vid_data(form.cleaned_data["filename"],frame,keyInput)
+                        print("wjasa")
+                        print(message)
+                        messages.success(request, message)
+                else:
+                    print("hhh")
+                    result="failed22"
             else:
-                messages.error(request,"key not authorized")
+                messages.error(request,result)
     else:
         print("helos")
         form=StegDecodeForm()
     return render(request,'main/decode.html',{"form":form})
 
-class HandleFileUpload(APIView):
-    parser_classes = [MultiPartParser]
-    def post(self , request):
-        try:
-            data = request.data
 
-            serializer = FileListSerializer(data = data)
+
+
+def download(request , uid):
+    return render(request , 'download.html' , context = {'uid' : uid})
+
+
+
+# @parser_classes([MultiPartParser])
+# def post(data2):
+#         try:
+#             serializer = FileListSerializer(data = data2)
         
-            if serializer.is_valid():
-                serializer.save()
-                return Response({
-                    'status' : 200,
-                    'message' : 'files uploaded successfully',
-                    'data' : serializer.data
-                })
+#             if serializer.is_valid():
+#                 serializer.save()
+#                 print("in postt")
+#                 return Response({
+#                     'status' : 200,
+#                     'message' : 'files uploaded successfully',
+#                     'data' : serializer.data
+#                 })
+#             else:
+#                 print(serializer.errors)
+#                 return Response({
+#                     'status' : 400,
+#                     'message' : 'somethign went wrong',
+#                     'data'  : serializer.errors
+#                 })
+#         except Exception as e:
+#             print(e)
+
+# class HandleFileUpload(APIView):
+#     parser_classes = [MultiPartParser]
+#     def post2(self , request):
+#         try:
+#             data = request.data
+
+#             serializer = FileListSerializer(data = data)
+        
+#             if serializer.is_valid():
+#                 serializer.save()
+#                 return Response({
+#                     'status' : 200,
+#                     'message' : 'files uploaded successfully',
+#                     'data' : serializer.data
+#                 })
             
-            return Response({
-                'status' : 400,
-                'message' : 'somethign went wrong',
-                'data'  : serializer.errors
-            })
-        except Exception as e:
-            print(e)
+#             return Response({
+#                 'status' : 400,
+#                 'message' : 'somethign went wrong',
+#                 'data'  : serializer.errors
+#             })
+#         except Exception as e:
+#             print(e)
             

@@ -19,9 +19,12 @@ from django.urls import include
 from django.conf.urls.static import static
 from django.conf import settings
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from main.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('download/<uid>/' ,download),
+    #path('handle/', HandleFileUpload.as_view()),
     path('', include('main.urls')),
     path('', include('django.contrib.auth.urls')),
 ]
