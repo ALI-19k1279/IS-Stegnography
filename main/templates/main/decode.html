@@ -128,19 +128,21 @@
     color: var(--color-gray-500);
     border-color: var(--element-bg-color);
   }
-  label, input,legend{
+  label,
+  input,
+  legend {
     display: block;
-}
+  }
 
-label,legend {
+  label,
+  legend {
     margin-bottom: 20px;
-}
+  }
 </style>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
 <script>
   $(document).ready(function () {
     $("#Radio1").click(function () {
-      $("#videosteg").hide();
       $("#decode_btn").show();
     });
     $("#Radio2").click(function () {
@@ -148,15 +150,11 @@ label,legend {
       $("#decode_btn").show();
     });
     $("#Radio3").click(function () {
-      $("#videosteg").hide();
       $("#decode_btn").show();
     });
     $("#Radio4").click(function () {
-      $("#videosteg").show();
       $("#decode_btn").show();
     });
-    
-
   });
 </script>
 <div class="wrap">
@@ -192,6 +190,7 @@ label,legend {
       />
       <label class="form-check-label" for="inlineRadio3">Audio</label>
     </div>
+    {% comment %}
     <div class="form-check form-check-inline">
       <input
         class="form-check-input"
@@ -199,38 +198,47 @@ label,legend {
         name="stegType"
         id="Radio4"
         value="video"
+        disabled
       />
       <label class="form-check-label" for="inlineRadio3">Video</label>
     </div>
-    <div id="videosteg" style="display:none">
-      <label style="margin-top:10px;">
+    <div id="videosteg" style="display: none">
+      <label style="margin-top: 10px">
         Enter Frame Number:
-        <input type="text" class="form-control" name="frame" id="frame" required>
+        <input type="text" class="form-control" name="frame" id="frame" />
       </label>
     </div>
-    {% csrf_token %}{{form|crispy}}
-    <div id="decode_btn" style="display:none;">
-    <button type="submit" class="btn btn-success">Decode</button>
+    {% endcomment %} {% csrf_token %}{{form|crispy}}
+    <div id="decode_btn" style="display: none">
+      <button type="submit" class="btn btn-success">Decode</button>
     </div>
-    <label for="message">
-        Decoded message:
-      </label>
-      {% if messages %}
-<ul class="messages">
-    {% for message in messages %}
-      <li style="color:green" {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-    {% endfor %}
-  
-</ul>
-{% endif %}
+    <label for="message"> Decoded message: </label>
+    {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+      <li
+        style="color: green"
+        {%
+        if
+        message.tags
+        %}
+        class="{{ message.tags }}"
+        {%
+        endif
+        %}
+      >
+        {{ message }}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
   </form>
   <br />
   <hr />
 </div>
-{% endblock %}
-
-
-{% comment %} <label class="custom-file-upload">
-    <input  type="file"   name="file_to_encode" id="file_to_encode" />
-    <i class="fa-solid fa-file-import"></i> Upload
-</label> {% endcomment %}
+{% endblock %} {% comment %}
+<label class="custom-file-upload">
+  <input type="file" name="file_to_encode" id="file_to_encode" />
+  <i class="fa-solid fa-file-import"></i> Upload
+</label>
+{% endcomment %}

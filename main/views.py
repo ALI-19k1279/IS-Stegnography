@@ -77,7 +77,7 @@ def deleteRec(request,filename,_id):
         if filename and _id:
             record=Steg.objects.filter(filename=filename).first()
             if record and record.user==request.user:
-                os.remove(os.path.join(django_settings.STATIC_ROOT, record.filename))
+                #os.remove(os.path.join(django_settings.STATIC_ROOT, record.filename))
                 record.delete()
                 messages.add_message(request,SUCCESS,"Deleted successfully");
             else:
@@ -87,7 +87,7 @@ def deleteRec(request,filename,_id):
 
 @login_required(login_url="/login")
 def steg(request):
-    return render(request,'main/textSteg.html')
+    return render(request,'main/Steg.html')
 
 def sign_up(request):
     if request.method=='POST':
@@ -159,7 +159,7 @@ def encode(request):
         print("helos")
         form=StegForm()
         
-    return render(request,'main/textSteg.html',{"form":form})
+    return render(request,'main/Steg.html',{"form":form})
 
 @login_required(login_url="/login")
 def decode(request):
@@ -202,7 +202,8 @@ def decode(request):
                     print("hhh")
                     result="failed22"
             else:
-                messages.error(request,result)
+                win32api.MessageBox(0,"Authentication Failed!!!","** Alert **",0x00001000)
+                messages.error(request,"")
     else:
         print("helos")
         form=StegDecodeForm()
@@ -216,50 +217,3 @@ def download(request , uid):
 
 
 
-# @parser_classes([MultiPartParser])
-# def post(data2):
-#         try:
-#             serializer = FileListSerializer(data = data2)
-        
-#             if serializer.is_valid():
-#                 serializer.save()
-#                 print("in postt")
-#                 return Response({
-#                     'status' : 200,
-#                     'message' : 'files uploaded successfully',
-#                     'data' : serializer.data
-#                 })
-#             else:
-#                 print(serializer.errors)
-#                 return Response({
-#                     'status' : 400,
-#                     'message' : 'somethign went wrong',
-#                     'data'  : serializer.errors
-#                 })
-#         except Exception as e:
-#             print(e)
-
-# class HandleFileUpload(APIView):
-#     parser_classes = [MultiPartParser]
-#     def post2(self , request):
-#         try:
-#             data = request.data
-
-#             serializer = FileListSerializer(data = data)
-        
-#             if serializer.is_valid():
-#                 serializer.save()
-#                 return Response({
-#                     'status' : 200,
-#                     'message' : 'files uploaded successfully',
-#                     'data' : serializer.data
-#                 })
-            
-#             return Response({
-#                 'status' : 400,
-#                 'message' : 'somethign went wrong',
-#                 'data'  : serializer.errors
-#             })
-#         except Exception as e:
-#             print(e)
-            

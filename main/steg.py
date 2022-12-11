@@ -435,11 +435,16 @@ def encode_vid_data(vid,data,stegvid,key,n):
         out.write(frame)
     
     print("\nEncoded the data successfully in the video file.")
-    frame_=frame_1
+    f=open("temp.txt","w+", encoding="utf-8")
+    f.write(str(frame_1))
+    f.close()
+    #frame_=frame_1
     # print(frame_)
 
 def decode_vid_data(filename,n,key):
     cap = cv2.VideoCapture(os.path.join(django_settings.STATIC_ROOT, filename))
+    # f=open("temp.txt","r+", encoding="utf-8")
+    # frame_=np.ndarray(f.read())
     max_frame=0;
     while(cap.isOpened()):
         ret, frame = cap.read()
